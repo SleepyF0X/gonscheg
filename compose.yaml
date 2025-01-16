@@ -1,6 +1,0 @@
-﻿services:
-  gonscheg:
-    image: gonscheg
-    build:
-      context: .
-      dockerfile: Gonscheg/Dockerfile
