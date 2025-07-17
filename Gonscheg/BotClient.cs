@@ -12,11 +12,10 @@ public class BotClient
     private static ReceiverOptions? _receiverOptions;
     public BotClient()
     {
-        Client = new TelegramBotClient("7813333407:AAHO_MrEEHSviX3TqpKVUfJ1d29BAZkWfp8");
+        Client = new TelegramBotClient("7813333407:AAEriK45LvvXrKhQc20YDRkNCfZ58nkrvtg");
         _receiverOptions = new ReceiverOptions
         {
-            AllowedUpdates =
-            [
+            AllowedUpdates = [
                 UpdateType.Message,
                 UpdateType.ChatMember
             ],
@@ -31,7 +30,8 @@ public class BotClient
         using var cts = new CancellationTokenSource();
         var commands = new[]
         {
-            StartCommand.Command
+            StartCommand.Command,
+            TestCommand.Command
         };
 
         await Client.SetMyCommands(commands, cancellationToken: cts.Token);

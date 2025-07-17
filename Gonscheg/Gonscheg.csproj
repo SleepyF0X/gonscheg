@@ -15,7 +15,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="CsvHelper" Version="33.1.0" />
+      <PackageReference Include="FuzzySharp" Version="2.0.2" />
+      <PackageReference Include="Google.Apis.Sheets.v4" Version="1.70.0.3819" />
       <PackageReference Include="Telegram.Bot" Version="22.3.0" />
+      <PackageReference Include="Unicode.net" Version="2.0.0" />
+      <PackageReference Include="Unidecode.NET" Version="2.1.0" />
     </ItemGroup>
 
     <ItemGroup>

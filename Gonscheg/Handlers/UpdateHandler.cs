@@ -13,8 +13,8 @@ public static class UpdateHandler
     {
         try
         {
-            HandleCommands(botClient, update, cancellationToken);
-            HandleEventsAsync(botClient, update, cancellationToken);
+            HandleCommands(botClient, update);
+            await HandleEventsAsync(botClient, update, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -24,14 +24,16 @@ public static class UpdateHandler
 
 
     // Add Commands handlers
-    private static void HandleCommands(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private static void HandleCommands(ITelegramBotClient botClient, Update update)
     {
         StartCommand.HandleCommand(botClient, update, ChatIds);
+        TestCommand.HandleCommand(botClient, update);
     }
 
     // Add Events handlers
-    private static async void HandleEventsAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private static async Task HandleEventsAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         await NewMemberEvent.HandleEvent(botClient, update, cancellationToken);
+        await IsOurEvent.HandleEvent(botClient, update, cancellationToken);
     }
 }
