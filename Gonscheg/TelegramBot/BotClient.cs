@@ -34,12 +34,17 @@ public class BotClient
         Func<ITelegramBotClient, Exception, CancellationToken, Task> errorHandler)
     {
         using var cts = new CancellationTokenSource();
+        var adminCommands = new[]
+        {
+            TestCommand.Command,
+        };
         var commands = new[]
         {
             StartCommand.Command,
-            TestCommand.Command
+            WeatherCommand.Command,
         };
 
+        await Client.SetMyCommands(adminCommands, BotCommandScope.AllChatAdministrators(), cancellationToken: cts.Token);
         await Client.SetMyCommands(commands, cancellationToken: cts.Token);
         Client.StartReceiving(updateHandler, errorHandler, _receiverOptions, cts.Token);
     }

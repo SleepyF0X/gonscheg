@@ -1,22 +1,17 @@
-using Gonscheg.Application.Repositories;
 using Gonscheg.Commands;
 using Gonscheg.Events;
-using Gonscheg.Helpers;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Chat = Gonscheg.Domain.Chat;
-using User = Gonscheg.Domain.User;
 
 namespace Gonscheg.Handlers;
 
 public class UpdateHandler(
-    WeatherClient weatherClient,
-    IBaseCRUDRepository<User> userRepository,
-    IBaseCRUDRepository<Chat> chatRepository,
     StartCommand startCommand,
     TestCommand testCommand,
     WeatherCommand weatherCommand,
+    IsOurEvent isOurEvent,
+    NewMemberEvent newMemberEvent,
     ILogger<UpdateHandler> logger)
 {
 
@@ -45,7 +40,7 @@ public class UpdateHandler(
     // Add Events handlers
     private async Task HandleEventsAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        await NewMemberEvent.HandleEventAsync(botClient, update, cancellationToken);
-        await new IsOurEvent(userRepository).HandleEventAsync(botClient, update, cancellationToken);
+        await newMemberEvent.HandleEventAsync(botClient, update, cancellationToken);
+        await isOurEvent.HandleEventAsync(botClient, update, cancellationToken);
     }
 }
