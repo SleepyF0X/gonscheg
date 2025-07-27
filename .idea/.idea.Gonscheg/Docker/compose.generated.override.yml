@@ -1,0 +1,21 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  gonscheg:
+    build:
+      context: "/Users/sleepy_f0x/RiderProjects/Gonscheg"
+      dockerfile: "Gonscheg/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net8.0/Gonscheg.dll"
+    environment:
+      DOTNET_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "gonscheg:dev"
+    ports: []
+    volumes:
+    - "/Users/sleepy_f0x/RiderProjects/Gonscheg/Gonscheg:/app:rw"
+    - "/Users/sleepy_f0x/RiderProjects/Gonscheg:/src:rw"
+    - "/Users/sleepy_f0x/.nuget/packages:/home/app/.nuget/packages"
+    working_dir: "/app"

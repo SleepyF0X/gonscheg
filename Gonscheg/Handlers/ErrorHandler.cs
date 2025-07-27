@@ -3,9 +3,9 @@ using Telegram.Bot.Exceptions;
 
 namespace Gonscheg.Handlers;
 
-public static class ErrorHandler
+public class ErrorHandler
 {
-    public static Task Handle(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken)
+    public Task Handle(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken)
     {
         var errorMessage = error switch
         {

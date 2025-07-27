@@ -1,39 +1,51 @@
+using Gonscheg.Application.Repositories;
 using Gonscheg.Commands;
 using Gonscheg.Events;
+using Gonscheg.Helpers;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
+using Chat = Gonscheg.Domain.Chat;
+using User = Gonscheg.Domain.User;
 
 namespace Gonscheg.Handlers;
 
-public static class UpdateHandler
+public class UpdateHandler(
+    WeatherClient weatherClient,
+    IBaseCRUDRepository<User> userRepository,
+    IBaseCRUDRepository<Chat> chatRepository,
+    StartCommand startCommand,
+    TestCommand testCommand,
+    WeatherCommand weatherCommand,
+    ILogger<UpdateHandler> logger)
 {
-    public static HashSet<long> ChatIds { get; set; } = [];
-    public static async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+
+    public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         try
         {
-            HandleCommands(botClient, update);
+            await HandleCommandsAsync(botClient, update);
             await HandleEventsAsync(botClient, update, cancellationToken);
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.ToString());
+            logger.LogError(ex.ToString());
         }
     }
 
 
     // Add Commands handlers
-    private static void HandleCommands(ITelegramBotClient botClient, Update update)
+    private async Task HandleCommandsAsync(ITelegramBotClient botClient, Update update)
     {
-        StartCommand.HandleCommand(botClient, update, ChatIds);
-        TestCommand.HandleCommand(botClient, update);
+        await startCommand.HandleCommandAsync(botClient, update);
+        await testCommand.HandleCommandAsync(botClient, update);
+        await weatherCommand.HandleCommandAsync(botClient, update);
     }
 
     // Add Events handlers
-    private static async Task HandleEventsAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private async Task HandleEventsAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        await NewMemberEvent.HandleEvent(botClient, update, cancellationToken);
-        await IsOurEvent.HandleEvent(botClient, update, cancellationToken);
+        await NewMemberEvent.HandleEventAsync(botClient, update, cancellationToken);
+        await new IsOurEvent(userRepository).HandleEventAsync(botClient, update, cancellationToken);
     }
 }

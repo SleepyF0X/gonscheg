@@ -4,11 +4,11 @@ using Telegram.Bot.Types.Enums;
 
 namespace Gonscheg.Commands;
 
-public static class TestCommand
+public class TestCommand
 {
     public static readonly BotCommand Command = new() { Command = "test", Description = "Test" };
 
-    public static async Task HandleCommand(ITelegramBotClient botClient, Update update)
+    public async Task HandleCommandAsync(ITelegramBotClient botClient, Update update)
     {
         if (update is { Type: UpdateType.Message, Message.Text: "/test" or "/test@gonscheg_nelegalniy_bot" })
         {

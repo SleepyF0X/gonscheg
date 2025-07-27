@@ -6,7 +6,7 @@ namespace Gonscheg.Events;
 
 public class NewMemberEvent
 {
-    public static async Task HandleEvent(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    public static async Task HandleEventAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         if (update is { Type: UpdateType.Message, Message.Type: MessageType.NewChatMembers })
         {

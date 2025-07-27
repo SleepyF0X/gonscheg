@@ -1,18 +1,15 @@
+using Gonscheg.Application.Repositories;
+using Gonscheg.Domain;
+using Gonscheg.TelegramBot;
 using Telegram.Bot;
 
 namespace Gonscheg.Extensions;
 
-public class ShodkaExtension
+public class ShodkaExtension(
+    BotClient botClient,
+    IBaseCRUDRepository<Chat> chatRepository)
 {
-    private readonly BotClient _botClient;
-    private readonly HashSet<long> _chatIds;
     private Timer? _timer;
-
-    public ShodkaExtension(BotClient botClient, HashSet<long> chatIds)
-    {
-        _botClient = botClient;
-        _chatIds = chatIds;
-    }
 
     public void StartExtension()
     {
@@ -38,19 +35,12 @@ public class ShodkaExtension
 
     private async Task SendMessageAsync()
     {
-        try
+        foreach (var chat in await chatRepository.GetAllAsync())
         {
-            foreach (var chatId in _chatIds)
-            {
-                await _botClient.Client.SendMessage(
-                    chatId: chatId,
-                    text: "Миллионы приходят, уходят, не в них счастье. \nСамым важным на свете всегда будут люди в этой комнате, вот здесь, сейчас. \nОсталось договориться о времени."
-                );
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Ошибка отправки сообщения: {ex.Message}");
+            await botClient.Client.SendMessage(
+                chatId: chat.ChatId,
+                text: "Миллионы приходят, уходят, не в них счастье. \nСамым важным на свете всегда будут люди в этой комнате, вот здесь, сейчас. \nОсталось договориться о времени."
+            );
         }
     }
 

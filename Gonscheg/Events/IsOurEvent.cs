@@ -1,63 +1,47 @@
-using System.Globalization;
-using System.Text.RegularExpressions;
-using CsvHelper;
+using Gonscheg.Application.Repositories;
 using Gonscheg.Helpers;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Unidecode.NET;
+using User = Gonscheg.Domain.User;
 
-namespace Gonscheg.Commands;
+namespace Gonscheg.Events;
 
-public class IsOurEvent
+public class IsOurEvent(IBaseCRUDRepository<User> userRepository)
 {
-    private static string _spreadsheetId = "1DuMqXvw8efCE3xzH6dcErYa5Z0JUk65x";
-    private static string _gid = "1131984113";
-
-    public static async Task HandleEvent(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    public async Task HandleEventAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(update.Message?.Text))
+        {
+            return;
+        }
+
         var chatId = update.Message.Chat.Id;
-        var plate = PlateExtractor.TryExtractPlateFromMessage(update.Message.Text, out var plateIsValid);
+        var plate = PlateExtractor.ExtractPlateFromNashessage(update.Message.Text);
+        if (string.IsNullOrWhiteSpace(plate))
+        {
+            return;
+        }
+
+        var plateIsValid = PlateExtractor.IsPlateValid(plate);
         if (update.Type is UpdateType.Message &&
             update.Message?.Text != null &&
             plateIsValid)
         {
-            var csvUrl = $"https://docs.google.com/spreadsheets/d/{_spreadsheetId}/export?format=csv&gid={_gid}";
-
-            var httpClient = new HttpClient();
-            var stream = await httpClient.GetStreamAsync(csvUrl, cancellationToken);
-
-            using var reader = new StreamReader(stream);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-
-            var rows = new List<string[]>();
-            while (await csv.ReadAsync())
-            {
-                var row = csv.Parser.Record;
-                rows.Add(row);
-            }
-
-            var numbers = new Dictionary<string, string>();
-            for (var i = 2; i < rows.Count; i++)
-            {
-                var row = rows[i];
-                if (row.Length >= 2)
+            var users = await userRepository.GetAllAsync();
+            var bestMatches = users
+                .Select(u => new
                 {
-                    var key = row[1].Trim().Unidecode();
-                    var value = row[0];
-                    if (PlateExtractor.IsPlateValid(key))
-                    {
-                        numbers[key] = value;
-                    }
-                }
-            }
-
-            var bestMatches = numbers
-                .Select(no => new
+                    Plate = u.Plate,
+                    TelegramTag = u.TelegramTag,
+                })
+                .ToArray()
+                .Select(u => new
                 {
-                    Number = no.Key,
-                    Owner = no.Value,
-                    Ratio = FuzzySharp.Levenshtein.GetRatio(plate?.Unidecode().ToUpper(), no.Key.Unidecode().ToUpper())
+                    Plate = u.Plate,
+                    TelegramTag = u.TelegramTag,
+                    Ratio = FuzzySharp.Levenshtein.GetRatio(plate.Unidecode().ToUpper(), u.Plate.Unidecode().ToUpper())
                 })
                 .Where(r => r.Ratio >= 0.6)
                 .OrderByDescending(r => r.Ratio)
@@ -68,16 +52,16 @@ public class IsOurEvent
                 case > 0 when bestMatches.First().Ratio == 1:
                     await botClient.SendMessage(
                         chatId: chatId,
-                        text: !string.IsNullOrWhiteSpace(bestMatches.First().Owner)
-                            ? $"Да, @{bestMatches.First().Owner}"
+                        text: !string.IsNullOrWhiteSpace(bestMatches.First().TelegramTag)
+                            ? $"Да, @{bestMatches.First().TelegramTag}"
                             : "Да, но тега нет, анонимус блять",
                         cancellationToken: cancellationToken);
                     break;
                 case 1:
                     await botClient.SendMessage(
                         chatId: chatId,
-                        text: !string.IsNullOrWhiteSpace(bestMatches.First().Owner)
-                            ? $"Думаю да, скорее всего @{bestMatches.First().Owner}"
+                        text: !string.IsNullOrWhiteSpace(bestMatches.First().TelegramTag)
+                            ? $"Думаю да, скорее всего @{bestMatches.First().TelegramTag}"
                             : "Думаю да, но тега нет, анонимус блять",
                         cancellationToken: cancellationToken);
                     break;
@@ -85,9 +69,9 @@ public class IsOurEvent
                     await botClient.SendMessage(
                         chatId: chatId,
                         text: $"Хуй знает... " +
-                              $"Вероятнее всего {(!string.IsNullOrWhiteSpace(bestMatches.First().Owner) ? $"@{bestMatches.First().Owner}" :"(тега нет)")}" +
+                              $"Вероятнее всего {(!string.IsNullOrWhiteSpace(bestMatches.First().TelegramTag) ? $"@{bestMatches.First().TelegramTag}" : "(тега нет)")}" +
                               "\n" +
-                              $"Но возможно это кто-то из них... {string.Join(", ", bestMatches.Skip(1).Select(bm => !string.IsNullOrWhiteSpace(bm.Owner) ? $"@{bm.Owner}" : "аноним"))}",
+                              $"Но возможно это кто-то из них... {string.Join(", ", bestMatches.Skip(1).Select(bm => !string.IsNullOrWhiteSpace(bm.TelegramTag) ? $"@{bm.TelegramTag}" : "аноним"))}",
                         cancellationToken: cancellationToken);
                     break;
                 default:
@@ -99,7 +83,7 @@ public class IsOurEvent
             }
         }
 
-        if (!plateIsValid && plate != null)
+        if (!plateIsValid)
         {
             await botClient.SendMessage(
                 chatId: chatId,

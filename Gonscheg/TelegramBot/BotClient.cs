@@ -1,10 +1,11 @@
 using Gonscheg.Commands;
+using Gonscheg.Shared;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace Gonscheg;
+namespace Gonscheg.TelegramBot;
 
 public class BotClient
 {
@@ -12,7 +13,12 @@ public class BotClient
     private static ReceiverOptions? _receiverOptions;
     public BotClient()
     {
-        Client = new TelegramBotClient("7813333407:AAEriK45LvvXrKhQc20YDRkNCfZ58nkrvtg");
+        var botToken = EnvironmentVariables.TelegramBotToken;
+        if (string.IsNullOrEmpty(botToken))
+        {
+            throw new Exception("Bot token is empty");
+        }
+        Client = new TelegramBotClient(botToken);
         _receiverOptions = new ReceiverOptions
         {
             AllowedUpdates = [

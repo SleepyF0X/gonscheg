@@ -1,12 +1,43 @@
-﻿using Gonscheg;
-using Gonscheg.Extensions;
-using Gonscheg.Handlers;
-using Telegram.Bot;
+﻿using Gonscheg.Infrastructure;
+using Gonscheg.Shared;
+using Gonscheg.TelegramBot;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
-var botClient = new BotClient();
-await botClient.StartClientAsync(UpdateHandler.Handle, ErrorHandler.Handle);
 
-//Add Extensions here
-new PereclichkaExtension(botClient, UpdateHandler.ChatIds).StartExtension();
-new ShodkaExtension(botClient, UpdateHandler.ChatIds).StartExtension();
-await Task.Delay(-1);
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .Enrich.FromLogContext()
+    .MinimumLevel.Information()
+    .CreateLogger();
+
+try
+{
+    Log.Information("Starting up...");
+
+    EnvironmentVariables.InitializeEnvironmentVariables();
+
+    var host = Host.CreateDefaultBuilder(args)
+        .UseSerilog()
+        .ConfigureServices((ctx, services) =>
+        {
+            services.AddInfrastructure();
+
+            services.AddLogging();
+            services.AddTelegramBot();
+        })
+        .Build();
+
+    await host.UpdateDatabase();
+
+    await host.RunAsync();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly!");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
