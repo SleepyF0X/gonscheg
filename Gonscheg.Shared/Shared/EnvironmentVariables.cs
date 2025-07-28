@@ -1,6 +1,6 @@
 using Gonscheg.Shared.Exceptions;
 
-namespace Gonscheg.Shared;
+namespace Gonscheg.Shared.Shared;
 
 public static class EnvironmentVariables
 {
@@ -9,6 +9,7 @@ public static class EnvironmentVariables
     public static string DBUser { get; private set; }
     public static string DBPass { get; private set; }
     public static string WeatherAPIKey { get; private set; }
+    public static string TelegramLogChatId { get; private set; }
 
     public static void InitializeEnvironmentVariables()
     {
@@ -22,5 +23,7 @@ public static class EnvironmentVariables
                  throw new EnvVariableNullException("DB_PASS");
         WeatherAPIKey = Environment.GetEnvironmentVariable("WEATHER_API_KEY") ??
                         throw new EnvVariableNullException("WEATHER_API_KEY");
+        TelegramLogChatId = Environment.GetEnvironmentVariable("TELEGRAM_LOG_CHAT_ID") ??
+                        throw new EnvVariableNullException("TELEGRAM_LOG_CHAT_ID");
     }
 }

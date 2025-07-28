@@ -1,5 +1,6 @@
 using System.Text;
 using Gonscheg.Shared;
+using Gonscheg.Shared.Shared;
 using WeatherAPI_CSharp;
 
 namespace Gonscheg.Helpers;

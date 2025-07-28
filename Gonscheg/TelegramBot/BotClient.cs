@@ -1,5 +1,6 @@
 using Gonscheg.Commands;
 using Gonscheg.Shared;
+using Gonscheg.Shared.Shared;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -42,6 +43,8 @@ public class BotClient
         {
             StartCommand.Command,
             WeatherCommand.Command,
+            RegisterCommand.Command,
+            EditBirthDateCommand.Command,
         };
 
         await Client.SetMyCommands(adminCommands, BotCommandScope.AllChatAdministrators(), cancellationToken: cts.Token);

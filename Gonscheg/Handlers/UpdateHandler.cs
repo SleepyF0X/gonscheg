@@ -10,6 +10,8 @@ public class UpdateHandler(
     StartCommand startCommand,
     TestCommand testCommand,
     WeatherCommand weatherCommand,
+    RegisterCommand registerCommand,
+    EditBirthDateCommand editBirthDateCommand,
     IsOurEvent isOurEvent,
     NewMemberEvent newMemberEvent,
     ILogger<UpdateHandler> logger)
@@ -35,6 +37,8 @@ public class UpdateHandler(
         await startCommand.HandleCommandAsync(botClient, update);
         await testCommand.HandleCommandAsync(botClient, update);
         await weatherCommand.HandleCommandAsync(botClient, update);
+        await registerCommand.HandleCommandAsync(botClient, update);
+        await editBirthDateCommand.HandleCommandAsync(botClient, update);
     }
 
     // Add Events handlers

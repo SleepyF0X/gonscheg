@@ -1,9 +1,11 @@
+using Microsoft.Extensions.Logging;
+using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 
 namespace Gonscheg.Handlers;
 
-public class ErrorHandler
+public class ErrorHandler(ILogger<ErrorHandler> logger)
 {
     public Task Handle(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken)
     {
@@ -14,7 +16,7 @@ public class ErrorHandler
             _ => error.ToString()
         };
 
-        Console.WriteLine(errorMessage);
+        logger.LogError(errorMessage);
         return Task.CompletedTask;
     }
 }

@@ -1,3 +1,5 @@
+using Gonscheg.Shared.Shared;
+
 namespace Gonscheg.Shared;
 
 public static class Constants

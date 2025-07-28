@@ -1,14 +1,15 @@
 using Gonscheg.Application.Repositories;
+using Gonscheg.Domain;
+using Gonscheg.Domain.Entities;
 using Gonscheg.Helpers;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Unidecode.NET;
-using User = Gonscheg.Domain.User;
 
 namespace Gonscheg.Events;
 
-public class IsOurEvent(IBaseCRUDRepository<User> userRepository)
+public class IsOurEvent(IBaseCRUDRepository<ChatUser> userRepository)
 {
     public async Task HandleEventAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {

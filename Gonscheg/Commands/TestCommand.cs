@@ -14,6 +14,7 @@ public class TestCommand()
         {
             var chatId = update.Message.Chat.Id;
             var chatAdmins = await botClient.GetChatAdministrators(chatId);
+            var chat = await botClient.GetChat("-2163831637");
             if (chatAdmins.Any(admin => admin.User.Id == update.Message.From?.Id))
             {
                 await botClient.SendMessage(

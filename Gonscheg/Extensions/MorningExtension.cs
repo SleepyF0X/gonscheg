@@ -1,7 +1,10 @@
 using Gonscheg.Application.Repositories;
 using Gonscheg.Domain;
+using Gonscheg.Domain.Entities;
 using Gonscheg.Helpers;
 using Gonscheg.TelegramBot;
+using Microsoft.Extensions.Logging;
+using Serilog;
 using Telegram.Bot;
 
 namespace Gonscheg.Extensions;
@@ -9,7 +12,8 @@ namespace Gonscheg.Extensions;
 public class MorningExtension(
     BotClient botClient,
     WeatherClient weatherClient,
-    IBaseCRUDRepository<Chat> chatRepository)
+    IBaseCRUDRepository<Chat> chatRepository,
+    ILogger<MorningExtension> logger)
 {
     public void StartExtension()
     {
@@ -44,6 +48,11 @@ public class MorningExtension(
                 chatId: chat.ChatId,
                 text: await weatherClient.GetFutureDayWeatherAsync(now, "Kyiv")
             );
+
+            logger.LogInformation($"MORNING message to chat" +
+                                  $"{chat.Name}" +
+                                  $"with id: {chat.ChatId}" +
+                                  $"SUCCESSFULLY SENT");
         }
     }
 }

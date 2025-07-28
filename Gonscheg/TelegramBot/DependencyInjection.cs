@@ -12,7 +12,6 @@ public static class DependencyInjection
     public static IServiceCollection AddTelegramBot(this IServiceCollection services)
     {
         services.AddSingleton<BotClient>();
-        services.AddSingleton<WeatherClient>();
 
         AddExtensions(services);
         AddCommands(services);
@@ -36,6 +35,8 @@ public static class DependencyInjection
         services.AddScoped<StartCommand>();
         services.AddScoped<TestCommand>();
         services.AddScoped<WeatherCommand>();
+        services.AddScoped<RegisterCommand>();
+        services.AddScoped<EditBirthDateCommand>();
     }
 
     // Default Telegram handlers

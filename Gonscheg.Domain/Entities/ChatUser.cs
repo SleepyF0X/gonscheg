@@ -1,8 +1,9 @@
-namespace Gonscheg.Domain;
+namespace Gonscheg.Domain.Entities;
 
-public class User : Entity
+public class ChatUser : Entity
 {
-    public string Plate { get; set; }
+    public long? TelegramUserId { get; set; }
+    public string? Plate { get; set; }
     public string? TelegramTag { get; set; }
     public string? Name { get; set; }
     public string? Surname { get; set; }
@@ -10,7 +11,7 @@ public class User : Entity
     public DateTime? BirthDate { get; set; }
     public string? Description { get; set; }
 
-    public User(string plate, string? telegramTag = null, string? name = null, string? surname = null,
+    public ChatUser(string? plate = null, string? telegramTag = null, string? name = null, string? surname = null,
         string? vinCode = null, DateTime? birthDate = null, string? description = null)
     {
         Plate = plate;

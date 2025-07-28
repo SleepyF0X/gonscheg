@@ -1,13 +1,17 @@
 using Gonscheg.Application.Repositories;
 using Gonscheg.Domain;
+using Gonscheg.Domain.Entities;
 using Gonscheg.TelegramBot;
+using Microsoft.Extensions.Logging;
+using Serilog;
 using Telegram.Bot;
 
 namespace Gonscheg.Extensions;
 
 public class ShodkaExtension(
     BotClient botClient,
-    IBaseCRUDRepository<Chat> chatRepository)
+    IBaseCRUDRepository<Chat> chatRepository,
+    ILogger<ShodkaExtension> logger)
 {
     private Timer? _timer;
 
@@ -41,6 +45,11 @@ public class ShodkaExtension(
                 chatId: chat.ChatId,
                 text: "Миллионы приходят, уходят, не в них счастье. \nСамым важным на свете всегда будут люди в этой комнате, вот здесь, сейчас. \nОсталось договориться о времени."
             );
+
+            logger.LogInformation($"SHODKA message to chat" +
+                                  $"{chat.Name}" +
+                                  $"with id: {chat.ChatId}" +
+                                  $"SUCCESSFULLY SENT");
         }
     }
 
