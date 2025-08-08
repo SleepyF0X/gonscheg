@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 

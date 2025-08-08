@@ -1,6 +1,5 @@
 ﻿using Gonscheg.Helpers;
 using Gonscheg.Infrastructure;
-using Gonscheg.Shared;
 using Gonscheg.Shared.Shared;
 using Gonscheg.TelegramBot;
 using Microsoft.Extensions.Hosting;

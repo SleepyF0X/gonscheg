@@ -1,9 +1,9 @@
-using Gonscheg.Commands;
-using Gonscheg.Events;
-using Gonscheg.Extensions;
+using System.Reflection;
+using Gonscheg.Application.TelegramBotInterfaces;
+using Gonscheg.Dispatchers;
 using Gonscheg.Handlers;
-using Gonscheg.Helpers;
 using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 
 namespace Gonscheg.TelegramBot;
 
@@ -12,8 +12,7 @@ public static class DependencyInjection
     public static IServiceCollection AddTelegramBot(this IServiceCollection services)
     {
         services.AddSingleton<BotClient>();
-
-        AddExtensions(services);
+        AddJobs(services);
         AddCommands(services);
         AddHandlers(services);
         AddEvents(services);
@@ -22,21 +21,57 @@ public static class DependencyInjection
         return services;
     }
 
-    // Extensions for hosted services (for example send message every day at 7 AM)
-    private static void AddExtensions(IServiceCollection services)
+    // Jobs (for example send message every day at 7 AM)
+    private static void AddJobs(IServiceCollection services)
     {
-        services.AddSingleton<MorningExtension>();
-        services.AddSingleton<ShodkaExtension>();
+        var iJobType = typeof(IQuartzJob);
+        services.AddQuartz(q =>
+        {
+            var jobTypes = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .SelectMany(s => s.GetTypes())
+                .Where(t => iJobType.IsAssignableFrom(t) && t is { IsInterface: false, IsAbstract: false })
+                .ToList();
+
+            foreach (var jobType in jobTypes)
+            {
+                var jobKey = JobKey.Create(jobType.Name);
+                var CRONTime =jobType.GetProperty(
+                    nameof(IQuartzJob.CRONTime),
+                    BindingFlags.Public | BindingFlags.Static)?.GetValue(null)?.ToString();
+                q.AddJob(jobType, jobKey);
+                q.AddTrigger(opts => opts
+                    .ForJob(jobKey)
+                    .WithIdentity($"{jobKey}Trigger")
+                    .WithCronSchedule(CRONTime, x => x
+                        .InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Europe/Kyiv"))
+                    )
+                );
+            }
+        });
+
+        services.AddQuartzHostedService(options =>
+        {
+            options.WaitForJobsToComplete = true;
+        });
     }
 
     // Bot commands which users can write
     private static void AddCommands(IServiceCollection services)
     {
-        services.AddScoped<StartCommand>();
-        services.AddScoped<TestCommand>();
-        services.AddScoped<WeatherCommand>();
-        services.AddScoped<RegisterCommand>();
-        services.AddScoped<EditBirthDateCommand>();
+        services.AddScoped<CommandDispatcher>();
+
+        var commandHandlerType = typeof(ICommandHandler);
+
+        var commandHandlers = AppDomain.CurrentDomain
+            .GetAssemblies()
+            .SelectMany(s => s.GetTypes())
+            .Where(p => commandHandlerType.IsAssignableFrom(p) && p is { IsInterface: false, IsAbstract: false });
+
+        foreach (var commandHandler in commandHandlers)
+        {
+            services.AddScoped(commandHandlerType, commandHandler);
+        }
     }
 
     // Default Telegram handlers
@@ -49,7 +84,17 @@ public static class DependencyInjection
     //Events (for example: new user added)
     private static void AddEvents(IServiceCollection services)
     {
-        services.AddScoped<IsOurEvent>();
-        services.AddScoped<NewMemberEvent>();
+        services.AddScoped<EventDispatcher>();
+        var eventHandlerType = typeof(IEventHandler);
+
+        var eventHandlers = AppDomain.CurrentDomain
+            .GetAssemblies()
+            .SelectMany(s => s.GetTypes())
+            .Where(p => eventHandlerType.IsAssignableFrom(p) && p is { IsInterface: false, IsAbstract: false });
+
+        foreach (var eventHandler in eventHandlers)
+        {
+            services.AddScoped(eventHandlerType, eventHandler);
+        }
     }
 }

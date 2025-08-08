@@ -27,7 +27,17 @@ public class BaseCRUDRepository<T> : IBaseCRUDRepository<T> where T : Entity
     {
         return await _context
             .Set<T>()
+            .AsNoTracking()
             .FirstOrDefaultAsync(expression);
+    }
+
+    public async Task<ICollection<T>> GetAllByAsync(Expression<Func<T, bool>> expression)
+    {
+        return await _context
+            .Set<T>()
+            .AsNoTracking()
+            .Where(expression)
+            .ToListAsync();
     }
 
     public async Task<T> CreateAsync(T entity)

@@ -1,5 +1,5 @@
 using Gonscheg.Application.Repositories;
-using Gonscheg.Domain;
+using Gonscheg.Application.TelegramBotInterfaces;
 using Gonscheg.Domain.Entities;
 using Gonscheg.Helpers;
 using Telegram.Bot;
@@ -9,7 +9,7 @@ using Unidecode.NET;
 
 namespace Gonscheg.Events;
 
-public class IsOurEvent(IBaseCRUDRepository<ChatUser> userRepository)
+public class IsOurEvent(IBaseCRUDRepository<ChatUser> userRepository) : IEventHandler
 {
     public async Task HandleEventAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
@@ -32,16 +32,11 @@ public class IsOurEvent(IBaseCRUDRepository<ChatUser> userRepository)
         {
             var users = await userRepository.GetAllAsync();
             var bestMatches = users
-                .Select(u => new
-                {
-                    Plate = u.Plate,
-                    TelegramTag = u.TelegramTag,
-                })
                 .ToArray()
                 .Select(u => new
                 {
                     Plate = u.Plate,
-                    TelegramTag = u.TelegramTag,
+                    Tag = u.GetTag(),
                     Ratio = FuzzySharp.Levenshtein.GetRatio(plate.Unidecode().ToUpper(), u.Plate.Unidecode().ToUpper())
                 })
                 .Where(r => r.Ratio >= 0.6)
@@ -53,26 +48,22 @@ public class IsOurEvent(IBaseCRUDRepository<ChatUser> userRepository)
                 case > 0 when bestMatches.First().Ratio == 1:
                     await botClient.SendMessage(
                         chatId: chatId,
-                        text: !string.IsNullOrWhiteSpace(bestMatches.First().TelegramTag)
-                            ? $"Да, @{bestMatches.First().TelegramTag}"
-                            : "Да, но тега нет, анонимус блять",
+                        text: $"Ага, {bestMatches.First().Tag}",
                         cancellationToken: cancellationToken);
                     break;
                 case 1:
                     await botClient.SendMessage(
                         chatId: chatId,
-                        text: !string.IsNullOrWhiteSpace(bestMatches.First().TelegramTag)
-                            ? $"Думаю да, скорее всего @{bestMatches.First().TelegramTag}"
-                            : "Думаю да, но тега нет, анонимус блять",
+                        text: $"Думаю да, скорее всего {bestMatches.First().Tag}\n" +
+                              $"Но это не точно",
                         cancellationToken: cancellationToken);
                     break;
                 case > 1:
                     await botClient.SendMessage(
                         chatId: chatId,
                         text: $"Хуй знает... " +
-                              $"Вероятнее всего {(!string.IsNullOrWhiteSpace(bestMatches.First().TelegramTag) ? $"@{bestMatches.First().TelegramTag}" : "(тега нет)")}" +
-                              "\n" +
-                              $"Но возможно это кто-то из них... {string.Join(", ", bestMatches.Skip(1).Select(bm => !string.IsNullOrWhiteSpace(bm.TelegramTag) ? $"@{bm.TelegramTag}" : "аноним"))}",
+                              $"Вероятнее всего {bestMatches.First().Tag}\n" +
+                              $"Но возможно это кто-то из них... {string.Join("\n", bestMatches.Skip(1).Select(bm => bm.Tag))}",
                         cancellationToken: cancellationToken);
                     break;
                 default:
@@ -88,7 +79,7 @@ public class IsOurEvent(IBaseCRUDRepository<ChatUser> userRepository)
         {
             await botClient.SendMessage(
                 chatId: chatId,
-                text: "Не могу понять, точно номер правильно ввел? Ну или ты криворукий",
+                text: "Не могу понять, точно номер правильно ввел?",
                 cancellationToken: cancellationToken);
         }
     }

@@ -1,4 +1,3 @@
-using Gonscheg.Domain;
 using Gonscheg.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 

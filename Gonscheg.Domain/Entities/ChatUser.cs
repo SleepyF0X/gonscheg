@@ -22,4 +22,18 @@ public class ChatUser : Entity
         BirthDate = birthDate;
         Description = description;
     }
+
+    public string GetTag()
+    {
+        if (!string.IsNullOrWhiteSpace(TelegramTag))
+        {
+            return $"@{TelegramTag}";
+        }
+        if (TelegramUserId != null && !string.IsNullOrWhiteSpace(Name))
+        {
+            return $"[{Name}](tg://user?id={TelegramUserId})";
+        }
+
+        return Name;
+    }
 }

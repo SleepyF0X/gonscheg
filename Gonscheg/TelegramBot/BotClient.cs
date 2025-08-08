@@ -1,5 +1,5 @@
-using Gonscheg.Commands;
-using Gonscheg.Shared;
+using Gonscheg.Application.TelegramBotInterfaces;
+using Gonscheg.Domain.Enums;
 using Gonscheg.Shared.Shared;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
@@ -10,10 +10,12 @@ namespace Gonscheg.TelegramBot;
 
 public class BotClient
 {
-    public ITelegramBotClient Client { get; set; }
+    public ITelegramBotClient Client { get; }
     private static ReceiverOptions? _receiverOptions;
-    public BotClient()
+    private static IEnumerable<ICommandHandler> _commandHandlers;
+    public BotClient(IEnumerable<ICommandHandler> commandHandlers)
     {
+        _commandHandlers = commandHandlers;
         var botToken = EnvironmentVariables.TelegramBotToken;
         if (string.IsNullOrEmpty(botToken))
         {
@@ -35,20 +37,16 @@ public class BotClient
         Func<ITelegramBotClient, Exception, CancellationToken, Task> errorHandler)
     {
         using var cts = new CancellationTokenSource();
-        var adminCommands = new[]
-        {
-            TestCommand.Command,
-        };
-        var commands = new[]
-        {
-            StartCommand.Command,
-            WeatherCommand.Command,
-            RegisterCommand.Command,
-            EditBirthDateCommand.Command,
-        };
+
+        var adminCommands = _commandHandlers
+            .Where(ch => ch.CommandUserType == UserType.Admin)
+            .Select(ch => ch.Command);
+        var userCommands = _commandHandlers
+            .Where(ch => ch.CommandUserType == UserType.Admin)
+            .Select(ch => ch.Command);
 
         await Client.SetMyCommands(adminCommands, BotCommandScope.AllChatAdministrators(), cancellationToken: cts.Token);
-        await Client.SetMyCommands(commands, cancellationToken: cts.Token);
+        await Client.SetMyCommands(userCommands, cancellationToken: cts.Token);
         Client.StartReceiving(updateHandler, errorHandler, _receiverOptions, cts.Token);
     }
 }

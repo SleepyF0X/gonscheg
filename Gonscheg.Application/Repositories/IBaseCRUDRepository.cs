@@ -7,6 +7,7 @@ public interface IBaseCRUDRepository<T> where T : Entity
 {
     public Task<T?> GetAsync(int id);
     public Task<T?> GetByAsync(Expression<Func<T, bool>> expression);
+    public Task<ICollection<T>> GetAllByAsync(Expression<Func<T, bool>> expression);
     public Task<T> CreateAsync(T entity);
     public Task<ICollection<T>> GetAllAsync();
     public Task<bool> UpdateAsync(T entity);

@@ -5,3 +5,4 @@ fly.toml
 riderModule.iml
 /_ReSharper.Caches/
 /.idea/
+/.editorconfig

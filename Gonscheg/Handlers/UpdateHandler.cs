@@ -1,4 +1,4 @@
-using Gonscheg.Commands;
+using Gonscheg.Dispatchers;
 using Gonscheg.Events;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -7,13 +7,8 @@ using Telegram.Bot.Types;
 namespace Gonscheg.Handlers;
 
 public class UpdateHandler(
-    StartCommand startCommand,
-    TestCommand testCommand,
-    WeatherCommand weatherCommand,
-    RegisterCommand registerCommand,
-    EditBirthDateCommand editBirthDateCommand,
-    IsOurEvent isOurEvent,
-    NewMemberEvent newMemberEvent,
+    CommandDispatcher commandDispatcher,
+    EventDispatcher eventDispatcher,
     ILogger<UpdateHandler> logger)
 {
 
@@ -34,17 +29,12 @@ public class UpdateHandler(
     // Add Commands handlers
     private async Task HandleCommandsAsync(ITelegramBotClient botClient, Update update)
     {
-        await startCommand.HandleCommandAsync(botClient, update);
-        await testCommand.HandleCommandAsync(botClient, update);
-        await weatherCommand.HandleCommandAsync(botClient, update);
-        await registerCommand.HandleCommandAsync(botClient, update);
-        await editBirthDateCommand.HandleCommandAsync(botClient, update);
+        await commandDispatcher.DispatchAsync(update, botClient);
     }
 
     // Add Events handlers
     private async Task HandleEventsAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        await newMemberEvent.HandleEventAsync(botClient, update, cancellationToken);
-        await isOurEvent.HandleEventAsync(botClient, update, cancellationToken);
+        await eventDispatcher.DispatchAsync(botClient, update, cancellationToken);
     }
 }
