@@ -3,6 +3,7 @@ using System;
 using Gonscheg.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Gonscheg.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250809115606_AddCarPhotos")]
+    partial class AddCarPhotos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,9 +71,6 @@ namespace Gonscheg.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Plate")
                         .HasColumnType("text");
-
-                    b.Property<DateTime>("RegisterDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Surname")
                         .HasColumnType("text");

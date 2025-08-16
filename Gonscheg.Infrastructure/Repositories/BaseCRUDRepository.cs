@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using Gonscheg.Application.Repositories;
 using Gonscheg.Domain;
+using Gonscheg.Domain.Entities;
 using Gonscheg.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 

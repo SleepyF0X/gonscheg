@@ -10,18 +10,8 @@ public class ChatUser : Entity
     public string? VinCode { get; set; }
     public DateTime? BirthDate { get; set; }
     public string? Description { get; set; }
-
-    public ChatUser(string? plate = null, string? telegramTag = null, string? name = null, string? surname = null,
-        string? vinCode = null, DateTime? birthDate = null, string? description = null)
-    {
-        Plate = plate;
-        TelegramTag = telegramTag;
-        Name = name;
-        Surname = surname;
-        VinCode = vinCode;
-        BirthDate = birthDate;
-        Description = description;
-    }
+    public string? CarPhotoPath { get; set; }
+    public DateTime RegisterDate { get; set; }
 
     public string GetTag()
     {

@@ -2,6 +2,7 @@ using Gonscheg.Application.Repositories;
 using Gonscheg.Infrastructure.Persistence;
 using Gonscheg.Infrastructure.Repositories;
 using Gonscheg.Shared;
+using Gonscheg.Shared.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

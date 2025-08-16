@@ -1,4 +1,4 @@
-namespace Gonscheg.Domain;
+namespace Gonscheg.Domain.Entities;
 
 public class Entity
 {

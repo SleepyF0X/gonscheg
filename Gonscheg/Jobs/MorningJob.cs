@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Quartz;
 using Telegram.Bot;
 
-namespace Gonscheg.Extensions;
+namespace Gonscheg.Jobs;
 
 public class MorningJob(
     BotClient botClient,
@@ -30,7 +30,7 @@ public class MorningJob(
             );
             await botClient.Client.SendTextMessageAsync(
                 chatId: chat.ChatId,
-                text: await weatherClient.GeDayWeatherMessageAsync("Europe/Kyiv")
+                text: await weatherClient.GetDayWeatherMessageAsync("Europe/Kyiv")
             );
 
             var birthdayUsers = await userRepository
@@ -40,15 +40,15 @@ public class MorningJob(
 
             if (birthdayUsers.Any())
             {
-                var sb = new StringBuilder("А вы знали что сегодня день рождения у...");
+                var sb = new StringBuilder("А вы знали что сегодня день рождения у...\n");
                 foreach (var birthdayUser in birthdayUsers)
                 {
-                    sb.AppendLine($"@{birthdayUser.GetTag()}");
+                    sb.AppendLine($"{birthdayUser.GetTag()}\n");
                 }
 
                 await botClient.Client.SendTextMessageAsync(
                     chatId: chat.ChatId,
-                    text: "Ранок потужнi хондаводи!"
+                    text: sb.ToString()
                 );
             }
 

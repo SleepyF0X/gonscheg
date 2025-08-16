@@ -1,4 +1,3 @@
-using Gonscheg.Extensions;
 using Gonscheg.Handlers;
 using Microsoft.Extensions.Hosting;
 

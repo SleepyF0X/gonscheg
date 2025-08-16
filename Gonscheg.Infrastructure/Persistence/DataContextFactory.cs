@@ -1,4 +1,5 @@
 using Gonscheg.Shared;
+using Gonscheg.Shared.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 

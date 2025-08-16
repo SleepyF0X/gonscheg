@@ -18,7 +18,7 @@ public class WeatherCommand(
         var chatId = update.Message.Chat.Id;
         await botClient.SendMessage(
             chatId: chatId,
-            text: await weatherClient.GeDayWeatherMessageAsync("Europe/Kyiv")
+            text: await weatherClient.GetDayWeatherMessageAsync("Europe/Kyiv")
         );
     }
 }

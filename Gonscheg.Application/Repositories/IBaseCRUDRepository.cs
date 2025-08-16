@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Gonscheg.Domain;
+using Gonscheg.Domain.Entities;
 
 namespace Gonscheg.Application.Repositories;
 

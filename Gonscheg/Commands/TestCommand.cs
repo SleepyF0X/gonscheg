@@ -19,7 +19,7 @@ public class TestCommand
         {
             await botClient.SendMessage(
                 chatId: chatId,
-                text: "Ну тестируй, хуйлуша"
+                text: "Ну тестируй, хуйлуша!"
             );
         }
     }

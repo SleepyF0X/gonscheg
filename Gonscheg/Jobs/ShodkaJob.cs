@@ -1,12 +1,12 @@
 using Gonscheg.Application.Repositories;
 using Gonscheg.Application.TelegramBotInterfaces;
 using Gonscheg.Domain.Entities;
+using Gonscheg.TelegramBot;
 using Microsoft.Extensions.Logging;
 using Quartz;
-using Gonscheg.TelegramBot;
 using Telegram.Bot;
 
-namespace Gonscheg.Extensions;
+namespace Gonscheg.Jobs;
 
 /// <summary>
 /// Job for sending a message every Friday at 12:00 Kyiv time.

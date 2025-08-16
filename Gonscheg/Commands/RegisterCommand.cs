@@ -22,15 +22,16 @@ public class RegisterCommand(
 
     public async Task HandleCommandAsync(ITelegramBotClient botClient, Update update)
     {
-        var messageText = update.Message!.Text;
+        var messageText = update.Message?.Text ?? update.Message?.Caption;
         var chat = update.Message.Chat;
         var user = await userRepository.GetByAsync(u =>
                        u.TelegramUserId == update.Message.From.Id ||
-                       u.TelegramTag == update.Message.From.Username) ??
+                       (u.TelegramTag!= null && u.TelegramTag == update.Message.From.Username)) ??
                    new ChatUser
                    {
                        TelegramUserId = update.Message.From.Id,
                        TelegramTag = update.Message.From.Username,
+                       RegisterDate = DateTime.Now,
                    };
         var match = Regex.Match(
             messageText,
@@ -40,13 +41,13 @@ public class RegisterCommand(
         {
             await botClient.SendMessage(
                 chatId: chat.Id,
-                text: "Сообщение о регистрации не распознано" +
-                      "Проверьте формат сообщения, параметры должны быть в указанном порядке\n" +
-                      "> \\/reg\n" +
-                      "> 1\\. Имя (или кличка)\n" +
-                      "> 2\\. Гос номер\n" +
-                      "> 3\\. Дата рождения \\(в формате 10\\.08\\.2001,\\ можно без года)\n" +
-                      "> 4\\. VIN код (дли истории машины, прошлых владельцев искать)"
+                text: TelegramMarkdownV2Helper.Escape("Сообщение о регистрации не распознано" +
+                                                      "Проверьте формат сообщения, параметры должны быть в указанном порядке\n" +
+                                                      ">/reg\n" +
+                                                      ">1. Имя (или позывной)\n" +
+                                                      ">2. Гос номер\n" +
+                                                      ">3. Дата рождения (в формате 10.08.2001, можно без года)\n" +
+                                                      ">4. VIN код (дли истории машины, прошлых владельцев искать)", '>')
             );
 
             return;
@@ -54,7 +55,7 @@ public class RegisterCommand(
 
         var name = match.Groups[3].Value.TrimStart().TrimEnd();
         var plate = match.Groups[7].Value.Unidecode().ToUpper().Trim();
-        var isBirthDateValid = DateTime.TryParse(match.Groups[11].Value.Trim(), out var birthdate);
+        var isBirthDateValid = BirthDateHelper.TryParseDateWithDefaultYear(match.Groups[11].Value.Trim(), 1000, out var birthdate);
         var vinCode = !string.IsNullOrEmpty(match.Groups[15].Value.Trim())
             ? match.Groups[15].Value.Trim().ToUpper()
             : null;
@@ -81,18 +82,32 @@ public class RegisterCommand(
 
         if (!string.IsNullOrWhiteSpace(vinCode) && vinCode.Length is < 16 or > 18)
         {
-            user.BirthDate = birthdate;
-        }
-        else
-        {
-            errors.Add("VIN код не валиден");
+            user.VinCode = !string.IsNullOrEmpty(vinCode) ? vinCode : user.VinCode;
         }
 
-        user.VinCode = !string.IsNullOrEmpty(vinCode) ? vinCode : user.VinCode;
         user.Name = name;
 
         if (!errors.Any())
         {
+            if (update.Message?.Photo is not null && update.Message.Photo.Length > 0)
+            {
+                var photo = update.Message.Photo.Last();
+
+                var file = await botClient.GetFileAsync(photo.FileId);
+                var filePath = file.FilePath!;
+
+                var directoryPath = "/app/car_photos";
+                var fileName = $"{user.TelegramUserId}.jpg";
+                var fullPath = Path.Combine(directoryPath, fileName);
+
+                Directory.CreateDirectory(directoryPath);
+
+                user.CarPhotoPath = fullPath;
+
+                await using var fileStream = new FileStream(fullPath, FileMode.Create);
+                await botClient.DownloadFile(filePath, fileStream);
+            }
+
             if (user.Id != 0)
             {
                 await userRepository.UpdateAsync(user);
@@ -111,8 +126,8 @@ public class RegisterCommand(
             }
 
             logger.LogInformation($"User " +
-                                  $"@{user.TelegramTag}\n" +
-                                  $"@{user.Name}\n" +
+                                  $"{user.GetTag()}\n" +
+                                  $"{user.Name}\n" +
                                   $"{user.Plate}\n" +
                                   $"{user.VinCode}\n" +
                                   $"{user.BirthDate}\n" +
@@ -122,14 +137,14 @@ public class RegisterCommand(
         {
             await botClient.SendMessage(
                 chatId: chat.Id,
-                text: "Регистрация не удалась\n" +
-                      $"Ошибки:\n {string.Join("\n", errors)}" +
-                      "Проверьте формат сообщения, параметры должны быть в указанном порядке\n" +
-                      "> \\/reg\n" +
-                      "> 1\\. Имя (или кличка)\n" +
-                      "> 2\\. Гос номер\n" +
-                      "> 3\\. Дата рождения \\(в формате 10\\.08\\.2001,\\ можно без года)\n" +
-                      "> 4\\. VIN код (дли истории машины, прошлых владельцев искать)",
+                text: TelegramMarkdownV2Helper.Escape("Регистрация не удалась\n" +
+                                                      $"Ошибки:\n {string.Join("\n", errors)}\n" +
+                                                      "Проверьте формат сообщения, параметры должны быть в указанном порядке\n" +
+                                                      ">/reg\n" +
+                                                      ">1. Имя (или позывной)\n" +
+                                                      ">2. Гос номер\n" +
+                                                      ">3. Дата рождения (в формате 10.08.2001, можно без года)\n" +
+                                                      ">4. VIN код (дли истории машины, прошлых владельцев искать)", '>'),
                 parseMode: ParseMode.MarkdownV2
             );
 

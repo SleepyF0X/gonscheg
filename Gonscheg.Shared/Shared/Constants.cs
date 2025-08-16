@@ -1,6 +1,4 @@
-using Gonscheg.Shared.Shared;
-
-namespace Gonscheg.Shared;
+namespace Gonscheg.Shared.Shared;
 
 public static class Constants
 {

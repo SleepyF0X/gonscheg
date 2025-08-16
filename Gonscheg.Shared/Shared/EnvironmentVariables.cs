@@ -1,4 +1,4 @@
-using Gonscheg.Shared.Exceptions;
+using Gonscheg.Shared.Shared.Exceptions;
 
 namespace Gonscheg.Shared.Shared;
 

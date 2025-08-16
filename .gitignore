@@ -6,3 +6,5 @@ riderModule.iml
 /_ReSharper.Caches/
 /.idea/
 /.editorconfig
+/compose.yaml
+/car_photos/

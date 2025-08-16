@@ -70,6 +70,7 @@ public static class DependencyInjection
 
         foreach (var commandHandler in commandHandlers)
         {
+            services.AddScoped(commandHandler);
             services.AddScoped(commandHandlerType, commandHandler);
         }
     }
@@ -94,6 +95,7 @@ public static class DependencyInjection
 
         foreach (var eventHandler in eventHandlers)
         {
+            services.AddScoped(eventHandler);
             services.AddScoped(eventHandlerType, eventHandler);
         }
     }

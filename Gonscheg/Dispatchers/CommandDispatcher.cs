@@ -1,4 +1,6 @@
+using System.Text.RegularExpressions;
 using Gonscheg.Application.TelegramBotInterfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -6,20 +8,27 @@ using Telegram.Bot.Types;
 namespace Gonscheg.Dispatchers;
 
 public class CommandDispatcher(
+    IServiceScopeFactory scopeFactory,
     IEnumerable<ICommandHandler> handlers,
     ILogger<CommandDispatcher> logger)
 {
     public async Task DispatchAsync(Update update, ITelegramBotClient botClient)
     {
-        if (update.Message?.Text == null || !update.Message.Text.StartsWith("/"))
+        var textOrCaption = update.Message?.Text ?? update.Message?.Caption;
+
+        if (string.IsNullOrEmpty(textOrCaption) || !textOrCaption.StartsWith("/"))
         {
             return;
         }
 
-        var command = update.Message.Text.Split(' ', 2)[0].TrimStart('/').Split('@')[0];
-        var handler = handlers.FirstOrDefault(h => h.Command.Command == command);
-        if (handler != null)
+        var command = Regex.Match(textOrCaption, @"^\/(\w+)(?:@\w+)?").Groups[1].Value;
+        var handlerType = handlers.FirstOrDefault(h => h.Command.Command == command)?.GetType();
+
+        if (handlerType != null)
         {
+            using var scope = scopeFactory.CreateScope();
+            var handler = (ICommandHandler)scope.ServiceProvider.GetRequiredService(handlerType);
+
             await handler.HandleCommandAsync(botClient, update);
         }
         else

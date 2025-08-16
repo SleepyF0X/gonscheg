@@ -3,6 +3,7 @@ using Gonscheg.Application.Repositories;
 using Gonscheg.Application.TelegramBotInterfaces;
 using Gonscheg.Domain.Entities;
 using Gonscheg.Domain.Enums;
+using Gonscheg.Helpers;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -28,12 +29,14 @@ public class EditBirthDateCommand(
                    {
                        TelegramUserId = update.Message.From.Id,
                        TelegramTag = update.Message.From.Username,
+                       RegisterDate = DateTime.Now,
                    };
         var date = Regex.Match(
             messageText,
             @"\/ebd(?:@\S+)?\s+(\d{2}\.\d{2}(\.\d{4})?)").Groups[1].Value;
-        var isBirthDateValid = DateTime.TryParse(
+        var isBirthDateValid = BirthDateHelper.TryParseDateWithDefaultYear(
             date,
+            1000,
             out var birthdate);
 
         if (isBirthDateValid)
